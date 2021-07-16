@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+    <title>Music Player</title>
+    <link rel="stylesheet" href="mystyle.css">
+    <!-- 引入elementUI样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入AnimateCSS样式 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.5.1" />
+</head>
+
+<body>
+
+
+
+
+    <div id="app">
+        <!-- 背景图片 -->
+        <div class="bg" :style="'background-image: url(' + musicCover + ')'"></div>
+        <div class="bg blur" :style="'background-image: url(' + musicCover + ')'"></div>
+
+        <!-- 音乐播放器主体结构 -->
+        <div class="music-wrapper">
+            <!-- 顶部栏 -->
+            <div class="topBar">
+                <div class="back"><i class="el-icon-link"></i></div>
+                <!-- 歌曲信息 -->
+                <div class="info">
+                    <!-- 标题 -->
+                    <div class="title">
+                        {{title}}
+                    </div>
+                    <!-- 作者 -->
+                    <div class="author">
+                        {{author}}
+                    </div>
+                </div>
+                <div class="share">
+                    <i class="el-icon-headset" @click="isVisible=true"></i>
+                </div>
+            </div>
+
+            <!-- CD封面 -->
+            <div class="main">
+                <div class="CD"
+                    :style="'backgroundImage: url(' + musicCover + ');transform: rotate(' + rotateDeg + 'deg)'"></div>
+            </div>
+
+            <!--音频-->
+            <audio id='player' :src='musicURL' @canplay='handleCanPlay' @timeupdate='handleTimeUpdate'
+                @ended='handleEnd' autoplay loop>
+            </audio>
+
+            <!-- 进度条 -->
+            <div class="progress">
+                <div class="curTime">{{transformSecToTime(audioInfo.currentTime)}}</div>
+                <div class="progress-line">
+                    <div class="whole-line"></div>
+                    <div class="already-line" :style="'width:' + progress + '%'"></div>
+                    <div class="play-point" :style="'left:' + progress + '%'"></div>
+                </div>
+                <div class="AllTime">{{transformSecToTime(audioInfo.duration)}}</div>
+            </div>
+
+            <!-- 底部控制条 -->
+            <div class="toolBar">
+                <div class="heart"><i class="el-icon-star-off"></i></div>
+                <div class="last" @click="lastSong()"><i class="el-icon-caret-left"></i></div>
+                <div v-show="!isPlaying" v-on:click='playMusic' class="play"><i class="el-icon-video-play"></i>
+                </div>
+                <div v-show="isPlaying" v-on:click='pauseMusic' class="pause"><i class="el-icon-video-pause"></i></div>
+                <div class="next" @click="nextSong()"><i class="el-icon-caret-right"></i></div>
+                <div class="comments" v-on:click="commentShow=true"><i class="el-icon-chat-dot-round"></i></div>
+            </div>
+        </div>
+
+        <!-- 搜索页 -->
+        <transition name="custom-classes-transition" enter-active-class="animated slideInDown"
+            leave-active-class="animated slideOutUp ">
+
+            <div class="search" v-show="isVisible">
+
+                <div class="search_bar">
+                    <div class="search_close" @click="isVisible=false">
+                        <i class="el-icon-arrow-left"></i>
+                    </div>
+                    <div class="content">
+                        <el-input size="mini" type="text" autocomplete="off" v-model="query">
+                    </div>
+                    <div class="enter" @click="getMusicList();">
+                        <el-button plain size="small" icon="el-icon-search" round>搜索</el-button>
+                    </div>
+                </div>
+
+
+                <div class="search_result">
+                    <ul class="song_list">
+                        <li v-for="item in musicList">
+                            <div @click="playMusicFromList(item.id)">
+                                <p>{{item.name}}</p>
+                                <p>{{item.artists[0].name}} / {{item.album.name}}</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+
+        </transition>
+
+
+        <!-- 评论区 -->
+        <transition name="custom-classes-transition" enter-active-class="animated slideInUp"
+            leave-active-class="animated zoomOutDown">
+
+            <div class="comment" v-show="commentShow">
+                <div class="commentbg_blur" :style="'background-image: url(' + musicCover + ')'"></div>
+                <div class="comment_bar">
+                    <div class="comment_close" @click="commentShow=false">
+                        <i class="el-icon-arrow-left"></i>
+                    </div>
+                    <div>热门评论</div>
+                    <div class="loading">
+                        <i class="el-icon-loading"></i>
+                    </div>
+                </div>
+
+                <div class="comment_page">
+                    <dl class="comment_content" v-for="item in comments">
+                        <dt class="comment_user">
+                            <el-avatar size="medium" :src="item.user.avatarUrl"></el-avatar>
+                            {{item.user.nickname}}
+                        </dt>
+                        <dd class="comment_detail">
+                            {{item.content}}
+                        </dd>
+                    </dl>
+
+                </div>
+
+            </div>
+        </transition>
+
+    </div>
+
+    <!-- 引入组件库 -->
+    <script src='https://cdn.jsdelivr.net/npm/vue/dist/vue.js'></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src='myscript.js'></script>
+
+</body>
+
+</html>
